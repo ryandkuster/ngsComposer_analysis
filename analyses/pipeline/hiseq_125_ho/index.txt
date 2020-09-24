@@ -1,0 +1,1 @@
+NGScode_Beauregard_S1_L001_R1_001.fastq.gz  WGS_B_T_PE_high_output_Beauregard_barcodes.txt

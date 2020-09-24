@@ -1,0 +1,230 @@
+rm(list=ls())
+
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(reshape2)
+library(directlabels)
+
+setwd('/media/ceres/composer_covid_work/hiseq250/empirical_barcodes/')
+
+# manually set this value for maximum number of mismatches available in wd
+end <- 8
+# platform = "(NovaSeq)"
+# platform = "(HiSeq)"
+platform = "(MiSeq)"
+last_base = 11
+
+# read in every results .csv file for matches and mismatches
+for (i in 0:end) {
+  assign(paste('miss_', i, sep = ''), read.csv(paste(i, 'mm/miss.total.txt', sep = ''), header = FALSE))
+  assign(paste('match_', i, sep = ''), read.csv(paste(i, 'mm/match.total.txt', sep = ''), header = FALSE))
+}
+
+# create a running total of the cumulative matches and mismatches at each mm level
+'miss_total_0' <- miss_0
+'match_total_0' <- match_0
+for (i in 1:end) {
+  match_target <- paste('match_total_', i, sep = '')
+  miss_target <- paste('miss_total_', i, sep = '')
+  assign(miss_target, get(paste('miss_', i, sep = '')) + get(paste('miss_total_', i - 1, sep = '')))
+  assign(match_target, get(paste('match_', i, sep = '')) + get(paste('match_total_', i - 1, sep = '')))
+}
+
+# create new names variable and merge all dataframes into one
+scores <- as.list(0:40)
+names_list <- c('call', 'position', 'mismatch', scores)
+for (i in 0:end) {
+  position <- list(1:nrow(get(paste('match_total_', i, sep = ''))))
+  mismatch <- list(rep(i, length(position)))
+
+  match <- list(rep('match', length(position)))
+  match_target <- paste('match_total_', i, sep = '')
+  assign(match_target, cbind(mismatch, get(paste('match_total_', i, sep = ''))))
+  assign(match_target, cbind(position, get(paste('match_total_', i, sep = ''))))
+  assign(match_target, cbind(match, get(paste('match_total_', i, sep = ''))))
+
+  miss <- list(rep('miss', length(position)))
+  miss_target <- paste('miss_total_', i, sep = '')
+  assign(miss_target, cbind(mismatch, get(paste('miss_total_', i, sep = ''))))
+  assign(miss_target, cbind(position, get(paste('miss_total_', i, sep = ''))))
+  assign(miss_target, cbind(miss, get(paste('miss_total_', i, sep = ''))))
+}
+
+# the only workaround to renaming and merging the dataframes that worked...
+names(miss_total_0) <- names_list
+names(miss_total_1) <- names_list
+names(miss_total_2) <- names_list
+names(miss_total_3) <- names_list
+names(miss_total_4) <- names_list
+names(miss_total_5) <- names_list
+names(miss_total_6) <- names_list
+names(miss_total_7) <- names_list
+names(miss_total_8) <- names_list
+
+names(match_total_0) <- names_list
+names(match_total_1) <- names_list
+names(match_total_2) <- names_list
+names(match_total_3) <- names_list
+names(match_total_4) <- names_list
+names(match_total_5) <- names_list
+names(match_total_6) <- names_list
+names(match_total_7) <- names_list
+names(match_total_8) <- names_list
+
+combined <- rbind(miss_total_0,
+                  miss_total_1,
+                  miss_total_2,
+                  miss_total_3,
+                  miss_total_4,
+                  miss_total_5,
+                  miss_total_6,
+                  miss_total_7,
+                  miss_total_8,
+                  match_total_0,
+                  match_total_1,
+                  match_total_2,
+                  match_total_3,
+                  match_total_4,
+                  match_total_5,
+                  match_total_6,
+                  match_total_7,
+                  match_total_8)
+
+# remove the intermediate dataframes
+rm(list=setdiff(ls(), c("combined", "platform", "last_base")))
+
+# create columns for mean and total per position
+mean <- list()
+reads <- list()
+for (i in 1:nrow(combined)) {
+  weight <- as.numeric(combined[i, 4:44]) * c(0:40)
+  mean <- c(mean, sum(weight) / sum(combined[i, 4:44]))
+  reads <- c(reads, sum(combined[i, 4:44]))
+}
+combined$mean <- unlist(mean)
+combined$reads <- unlist(reads)
+
+# create columns with per-base means/totals/phred values of match and mismatch combined
+reads_match_and_miss = list()
+mean_match_and_miss <- list()
+empirical_qscore <- list()
+for (i in 1:nrow(combined)) {
+  sub_reads <- combined$reads[combined$mismatch==combined[i, 3] & combined$position==combined[i, 2]]
+  reads_match_and_miss <- c(reads_match_and_miss, (sum(unlist(sub_reads))))
+  empirical_qscore <- c(empirical_qscore, -10*log10(combined$reads[i] / sum(sub_reads)))
+  sub_means <- sum(combined$reads[combined$mismatch==combined[i, 3] & combined$position==combined[i, 2]] * combined$mean[combined$mismatch==combined[i, 3] & combined$position==combined[i, 2]])
+  sub_counts <- sum(combined$reads[combined$mismatch==combined[i, 3] & combined$position==combined[i, 2]])
+  mean_match_and_miss <- c(mean_match_and_miss, sub_means/sub_counts)
+}
+combined$mean_match_and_miss <- unlist(mean_match_and_miss)
+combined$reads_match_and_miss <- unlist(reads_match_and_miss)
+combined$empirical_qscore <- unlist(empirical_qscore)
+
+# clear environment/console and save
+rm(list=setdiff(ls(), c("combined", "platform", "last_base")))
+write.csv(combined, file = 'combined.csv', row.names = FALSE)
+
+# grab only rows pertaining to mismatch (matches calculations are just the inverse)
+miscalls <- combined[combined$call=="miss" & combined$mismatch > 0, ]
+
+# remove possibly misleading artifacts that occur near RE motif in some datasets
+miscalls <- miscalls[miscalls$position <= last_base, ]
+
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+#######################################################
+
+base_plot <- ggplot() +
+  geom_line(data = miscalls, aes(x = mismatch, y = empirical_qscore, color = "Empirical", group = position)) +
+  geom_line(data = miscalls, aes(x = mismatch, y = mean_match_and_miss, color = "Instrument", group = position)) +
+  geom_point(data = miscalls, aes(x = mismatch, y = empirical_qscore, color = "Empirical")) +
+  geom_point(data = miscalls, aes(x = mismatch, y = mean_match_and_miss, color = "Instrument")) +
+  xlab('Mismatches in Barcode Assignment') +
+  ylab('Phred Score') +
+  labs(color = 'Score Calculation:') +
+  geom_hline(aes(yintercept = 10), lty=1, alpha=0.05, size=0.35)+
+  geom_hline(aes(yintercept = 20), lty=1, alpha=0.05, size=0.35)+
+  geom_hline(aes(yintercept = 30), lty=1, alpha=0.05, size=0.35)+
+  geom_hline(aes(yintercept = 40), lty=1, alpha=0.05, size=0.35)+
+  theme_classic() +
+  scale_x_continuous(limits = c(1, 4), breaks = seq(1, max(miscalls$mismatch, by = 1)))+
+  # scale_x_continuous(limits = c(1, 8), breaks = seq(1, max(miscalls$mismatch, by = 1)))+
+  ggtitle(paste("Base-calling Error Rates", platform))
+
+
+# add a secondary y axis label (very convoluted process, must use sec_breaks and manually transformed list...)
+#probabilities = 10^(c(0:40)/-10) # all 41 positions
+#sec_breaks = c(0:40) # all 41 positions
+# sec_breaks = seq(0,40, by=10) # 5 positions
+# probabilities = 10^(sec_breaks/-10) # 5 positions
+sec_breaks = c(0, 10, 20, 30, 40) # 5 positions
+probabilities = c(1, 0.1, 0.01, 0.001, 0.0001) # 5 positions
+base_plot = base_plot + scale_y_continuous(limits = c(0, 40),
+                                           sec.axis = sec_axis(trans = (~.),
+                                                               breaks = sec_breaks,
+                                                               labels = sprintf("%.4f", probabilities),
+                                                               name = "Probability Miscall"))
+
+# make labels larger and tweak border/legend styles
+resize = theme(
+  plot.title=element_text(size=30, hjust = 0.5),
+  axis.text=element_text(size=16),
+  axis.title=element_text(size=16),
+  legend.text=element_text(size=16),
+  legend.title=element_text(size=16),
+  panel.border = element_rect(color = "black", fil=NA, size=1),
+  legend.position = "top"
+  )
+plot1 = base_plot + resize 
+plot1
+plot2 = plot1 + geom_text_repel(aes(x = miscalls$mismatch, y = miscalls$empirical_qscore, label = miscalls$position),
+                                size=6,
+                                alpha=0.75,
+                                segment.color="grey",
+                                segment.alpha=1,
+                                nudge_x = 0.3,
+                                direction     = "y"
+                                )
+plot2
+ggsave(filename = "plot1.tiff", plot=plot1, width=15, height= 7.5, dpi=600, compression = "lzw")
+ggsave(filename = "plot2.tiff", plot=plot2, width=15, height= 7.5, dpi=600, compression = "lzw")
+
+
+#TODO add average and sd for each point, have version with labels for supplementary
+
+# melt the dataset, I guess
+# m.miscalls <- miscalls[c("position", "mismatch", "mean_match_and_miss", "empirical_qscore")]
+# m.miscalls <- melt(m.miscalls, id.vars = c("position", "mismatch"), measure.vars = c("mean_match_and_miss", "empirical_qscore"))
+# group_ids <- list()
+# for (i in 1:nrow(m.miscalls)) {
+#   group_name <- paste(m.miscalls[i, 1], m.miscalls[i, 2], m.miscalls[i, 3], sep = "_")
+#   group_ids <- c(group_ids, group_name)
+# }
+# m.miscalls$group_ids <- unlist(group_ids)
+
+
+
+
+
+
+
+
+                          

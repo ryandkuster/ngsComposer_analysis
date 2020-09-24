@@ -1,0 +1,1 @@
+Mwanga-GBSpoly-nolig_S1_L001_R1_001.fastq.gz    mwanga_barcodes_combined.txt

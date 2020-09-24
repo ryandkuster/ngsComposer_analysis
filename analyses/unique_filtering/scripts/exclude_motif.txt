@@ -1,0 +1,44 @@
+#below is how I checked for miscalls OUTSIDE of the motif region:
+
+for i in failed.*R1*; do sed -n '2~4p' $i > all.$i ; wc -l all.$i ; sort all.$i | uniq | wc -l ; cat all.$i | cut -c 6- | sort | uniq | wc -l ; done
+for i in failed.*R2*; do sed -n '2~4p' $i > all.$i ; wc -l all.$i ; sort all.$i | uniq | wc -l ; cat all.$i | cut -c 5- | sort | uniq | wc -l ; done
+
+#miseq dataset
+63066 all.failed.trimmed_se.combined.R1.fastq_blast_output_header.fastq
+60213 uniq
+60132 uniq after trimming first 5 bases
+22993 all.failed.trimmed_se.combined.R2.fastq_blast_output_header.fastq
+22188 uniq
+22119 uniq after trimming first 4 bases
+
+
+#novaseq dataset
+75419546 all.failed.trimmed_se.combined.R1.fastq
+23691755 uniq
+22602870 uniq after trimming first 5 bases
+204037019 all.failed.trimmed_se.combined.R2.fastq
+55720251 uniq
+52488595 uniq after trimming first 4 bases
+
+
+for i in failed.trimmed_se.combined.R*; do sed -n '2~4p' $i > all.$i ; wc -l all.$i ; sort all.$i | uniq | wc -l ; cat all.$i | cut -c 4- | sort | uniq | wc -l ; done
+
+#125 dataset (high output)
+1097532 all.failed.trimmed_se.combined.R1.fastq_11_header.fastq
+830384 uniq
+780104 uniq after trimming first 3 bases
+1691071 all.failed.trimmed_se.combined.R2.fastq_11_header.fastq
+1281587 uniq
+1202633 uniq after trimming first 3 bases
+
+
+#250 dataset (rapid run)
+1293422 all.failed.trimmed_se.combined.R1.fastq_11_header.fastq
+1119912 uniq
+1065549 uniq after trimming first 3 bases
+5844022 all.failed.trimmed_se.combined.R2.fastq_11_header.fastq
+5617826 uniq
+5474103 uniq after trimming first 3 bases
+
+
+

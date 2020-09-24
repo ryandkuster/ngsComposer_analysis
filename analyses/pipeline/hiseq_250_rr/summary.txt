@@ -1,0 +1,29 @@
+ngscomposer version 0.4.7
+see https://github.com/ryandkuster/ngscomposer/releases for newest release info
+
+start 2020-08-24 11:54:50
+end   2020-08-24 19:22:24
+
+paired = True
+procs = 20
+alt_dir = False
+walkaway = True
+rm_transit = True
+initial_qc = True
+all_qc = summary
+front_trim = 6
+bcs_index = /media/drive_b/Ryan/composer_analysis/analysis/hiseq_2x250_ngscomposer/composer_pipeline/index.txt
+mismatch = 1
+R1_bases_ls = ['TCC', 'TCT']
+R2_bases_ls = ['TCC', 'TCT']
+non_genomic = 1
+end_score = 30
+window = 10
+min_len = 100
+R1 searched for: /media/drive_b/Ryan/composer_analysis/analysis/hiseq_2x250_ngscomposer/composer_pipeline/adapters.R2.txt
+R2 searched for: /media/drive_b/Ryan/composer_analysis/analysis/hiseq_2x250_ngscomposer/composer_pipeline/adapters.R1.txt
+adapter_match = 12
+q_min = 30
+q_percent = 90
+phred64 = False
+compress = True
