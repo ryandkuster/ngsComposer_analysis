@@ -1,4 +1,4 @@
-rm(list=ls())
+args = commandArgs(trailingOnly=TRUE)
 
 library(data.table)
 library(ggplot2)
@@ -6,14 +6,19 @@ library(ggrepel)
 library(reshape2)
 library(directlabels)
 
-setwd('/media/ceres/composer_covid_work/hiseq250/empirical_barcodes/')
+if (length(args) == 2) {
+  setwd(args[1])
+  platform = paste('(', args[2], ')',sep='')
+} else {
+  setwd('/Users/ryankuster/github/ngsComposer_analysis/analyses/empirical_barcodes/vignette_miseq_simulated/')
+  platform = 'MiSeq'
+}
 
 # manually set this value for maximum number of mismatches available in wd
 end <- 8
-# platform = "(NovaSeq)"
-# platform = "(HiSeq)"
-platform = "(MiSeq)"
-last_base = 11
+
+# manually set this value for last base to consider (positions into read)
+last_base = 10
 
 # read in every results .csv file for matches and mismatches
 for (i in 0:end) {
@@ -131,25 +136,9 @@ miscalls <- combined[combined$call=="miss" & combined$mismatch > 0, ]
 # remove possibly misleading artifacts that occur near RE motif in some datasets
 miscalls <- miscalls[miscalls$position <= last_base, ]
 
+
 #######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
+# create plots
 #######################################################
 
 base_plot <- ggplot() +
@@ -170,11 +159,7 @@ base_plot <- ggplot() +
   ggtitle(paste("Base-calling Error Rates", platform))
 
 
-# add a secondary y axis label (very convoluted process, must use sec_breaks and manually transformed list...)
-#probabilities = 10^(c(0:40)/-10) # all 41 positions
-#sec_breaks = c(0:40) # all 41 positions
-# sec_breaks = seq(0,40, by=10) # 5 positions
-# probabilities = 10^(sec_breaks/-10) # 5 positions
+# add a secondary y axis label 
 sec_breaks = c(0, 10, 20, 30, 40) # 5 positions
 probabilities = c(1, 0.1, 0.01, 0.001, 0.0001) # 5 positions
 base_plot = base_plot + scale_y_continuous(limits = c(0, 40),
@@ -194,7 +179,7 @@ resize = theme(
   legend.position = "top"
   )
 plot1 = base_plot + resize 
-plot1
+
 plot2 = plot1 + geom_text_repel(aes(x = miscalls$mismatch, y = miscalls$empirical_qscore, label = miscalls$position),
                                 size=6,
                                 alpha=0.75,
@@ -203,26 +188,9 @@ plot2 = plot1 + geom_text_repel(aes(x = miscalls$mismatch, y = miscalls$empirica
                                 nudge_x = 0.3,
                                 direction     = "y"
                                 )
-plot2
-ggsave(filename = "plot1.tiff", plot=plot1, width=15, height= 7.5, dpi=600, compression = "lzw")
-ggsave(filename = "plot2.tiff", plot=plot2, width=15, height= 7.5, dpi=600, compression = "lzw")
 
-
-#TODO add average and sd for each point, have version with labels for supplementary
-
-# melt the dataset, I guess
-# m.miscalls <- miscalls[c("position", "mismatch", "mean_match_and_miss", "empirical_qscore")]
-# m.miscalls <- melt(m.miscalls, id.vars = c("position", "mismatch"), measure.vars = c("mean_match_and_miss", "empirical_qscore"))
-# group_ids <- list()
-# for (i in 1:nrow(m.miscalls)) {
-#   group_name <- paste(m.miscalls[i, 1], m.miscalls[i, 2], m.miscalls[i, 3], sep = "_")
-#   group_ids <- c(group_ids, group_name)
-# }
-# m.miscalls$group_ids <- unlist(group_ids)
-
-
-
-
+ggsave(filename = "error_rates.png", plot=plot1, width=15, height= 7.5)
+ggsave(filename = "error_rates_labelled.png", plot=plot2, width=15, height= 7.5)
 
 
 
