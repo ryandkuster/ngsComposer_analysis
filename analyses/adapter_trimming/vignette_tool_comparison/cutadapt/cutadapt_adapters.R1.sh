@@ -1,0 +1,1 @@
+../../../../resources/adapters/miseq_mwanga/miseq_mwanga_no_RE/tool_comparisons/cutadapt_adapters.R1.sh

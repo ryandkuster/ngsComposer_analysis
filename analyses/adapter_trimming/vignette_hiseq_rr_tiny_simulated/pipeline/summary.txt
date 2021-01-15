@@ -1,0 +1,29 @@
+ngscomposer version 0.4.8
+see https://github.com/ryandkuster/ngscomposer/releases for newest release info
+
+start 2021-01-14 10:42:35
+end   2021-01-14 10:55:57
+
+paired = True
+procs = 1
+alt_dir = False
+walkaway = True
+rm_transit = False
+initial_qc = False
+all_qc = False
+front_trim = 6
+bcs_index = /Users/ryankuster/github/ngsComposer_analysis/analyses/adapter_trimming/vignette_hiseq_rr_tiny_simulated/pipeline/index.txt
+mismatch = 1
+R1_bases_ls = []
+R2_bases_ls = []
+non_genomic = False
+end_score = False
+window = False
+min_len = 0
+R1 searched for: /Users/ryankuster/github/ngsComposer_analysis/analyses/adapter_trimming/vignette_hiseq_rr_tiny_simulated/pipeline/adapters.R1.txt
+R2 searched for: /Users/ryankuster/github/ngsComposer_analysis/analyses/adapter_trimming/vignette_hiseq_rr_tiny_simulated/pipeline/adapters.R2.txt
+adapter_match = 12
+q_min = False
+q_percent = False
+phred64 = False
+compress = False

@@ -1,0 +1,1 @@
+../../../../resources/adapters/miseq_mwanga/miseq_mwanga_no_RE/adapters.R1.txt

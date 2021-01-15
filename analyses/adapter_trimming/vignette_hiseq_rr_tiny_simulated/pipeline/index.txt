@@ -1,0 +1,1 @@
+simulated_R1.fastq    mwanga_barcodes_96_x_96.txt

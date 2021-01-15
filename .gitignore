@@ -3,3 +3,4 @@ raw_data/*
 .DS_Store*
 *.fastq
 *.fastq.gz
+*.tiff
